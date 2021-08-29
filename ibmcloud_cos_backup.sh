@@ -17,3 +17,12 @@ config_ibmcloud_cli_cos() {
     echo "$__access_key_id
     $__secret_access_key" | ibmcloud cos config hmac
 }
+
+perform_dry_run() {
+    
+    local __src_cos_service_instance=$1
+    local __src_cos_bucket=$2
+    local __dst_cos_service_instance=$3
+    local __dst_cos_bucket=$4
+    rclone --dry-run copy $__src_cos_service_instance:$__src_cos_bucket $__dst_cos_service_instance:$__dst_cos_bucket
+}
