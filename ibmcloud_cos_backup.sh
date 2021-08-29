@@ -35,3 +35,18 @@ perform_copy() {
     local __dst_cos_bucket=$4
     rclone -v -P copy --checksum $__src_cos_service_instance:$__src_cos_bucket $__dst_cos_service_instance:$__dst_cos_bucket
 }
+
+prepare_backup_bucket() {
+
+    local __dst_cos_service_instance=$1
+    local __bucket=$2
+
+    rclone lsd $__dst_cos_service_instance: | grep $__bucket > /dev/null 2>&1
+    local __backup_bucket_exists=$(echo $?)
+    if [[ $__backup_bucket_exists -eq 1 ]]; then 
+        echo 'bucket not found. creating bucket now..'
+        ibmcloud cos bucket-create --bucket $__bucket
+    else
+        echo 'backup bucket exists'
+    fi
+}
