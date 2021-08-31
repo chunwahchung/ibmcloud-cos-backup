@@ -20,20 +20,20 @@ config_ibmcloud_cli_cos() {
 
 perform_dry_run() {
     
-    local __src_cos_service_instance=$1
+    local __src_cos_service_instance_id=$1
     local __src_cos_bucket=$2
-    local __dst_cos_service_instance=$3
+    local __dst_cos_service_instance_id=$3
     local __dst_cos_bucket=$4
-    rclone --dry-run copy $__src_cos_service_instance:$__src_cos_bucket $__dst_cos_service_instance:$__dst_cos_bucket
+    rclone --dry-run copy $__src_cos_service_instance_id:$__src_cos_bucket $__dst_cos_service_instance_id:$__dst_cos_bucket
 }
 
 perform_copy() {
    
-    local __src_cos_service_instance=$1
+    local __src_cos_service_instance_id=$1
     local __src_cos_bucket=$2
-    local __dst_cos_service_instance=$3
+    local __dst_cos_service_instance_id=$3
     local __dst_cos_bucket=$4
-    rclone -v -P copy --checksum $__src_cos_service_instance:$__src_cos_bucket $__dst_cos_service_instance:$__dst_cos_bucket
+    rclone -v -P copy --checksum $__src_cos_service_instance_id:$__src_cos_bucket $__dst_cos_service_instance_id:$__dst_cos_bucket
 }
 
 prepare_backup_bucket() {
