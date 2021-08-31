@@ -93,3 +93,18 @@ bucket_region() {
 
     ibmcloud cos bucket-location-get --bucket $__bucket --output json | jq -r '.LocationConstraint' | sed -E 's/-(standard|smart)//g'
 }
+
+bucket_endpoint() {
+
+    local __bucket_name=$1
+    local __use_private_endpoint=$2
+    local __region=$(bucket_region $__bucket_name)
+    local __public_endpoint="s3.$__region.cloud-object-storage.appdomain.cloud"
+    local __private_endpoint="s3.private.$__region.cloud-object-storage.appdomain.cloud"
+
+    if [[ $__use_private_endpoint -eq 1 ]]; then
+        echo $__private_endpoint
+    else
+        echo $__public_endpoint
+    fi
+}
