@@ -136,3 +136,26 @@ get_service_instance_from_json_base64() {
 
     echo $__service_instance
 }
+
+create_rclone_profile() {
+
+    local __profile_name=$1
+    local __access_key_id=$2
+    local __secret_access_key=$3
+    local __use_private_endpoint=$4
+    local __backup_profile=$5
+
+    config_ibmcloud_cli_cos $__access_key_id $__secret_access_key > /dev/null 2>&1
+    local __first_bucket=$(ibmcloud cos buckets | sed -e '1,4d' | cut -d ' ' -f 1 | head -n 1)
+
+    if [[ -n "$__first_bucket" || -n "$__backup_profile" ]]; then
+
+        local __endpoint=$(bucket_endpoint $__first_bucket $__use_private_endpoint)
+        local __profile="[$__profile_name]\ntype = s3\nprovider = IBMCOS\nenv_auth = false\naccess_key_id = $__access_key_id\nsecret_access_key = $__secret_access_key\nendpoint = $__endpoint\n\n"
+
+        printf "$__profile" >> ~/.config/rclone/rclone.conf
+        printf "$__profile"
+    else 
+        echo "Service instance '$__profile_name' has no buckets. Not creating an rclone profile."
+    fi
+}
