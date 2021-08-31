@@ -116,3 +116,10 @@ get_HMAC_key_from_service_credential() {
    
     echo $__hmac_keys
 }
+
+rclone_list_buckets() {
+    
+    local __profile=$1
+
+    rclone lsd $__profile: | awk 'NF>1{print $NF}'
+}
