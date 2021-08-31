@@ -1,7 +1,9 @@
 #!/bin/bash
 
 ibmcloud_cli_login() {
+
     local __api_key=$1
+
     ibmcloud login --quiet --no-region --apikey $__api_key
 }
 
@@ -24,6 +26,7 @@ perform_dry_run() {
     local __src_cos_bucket=$2
     local __dst_cos_service_instance_id=$3
     local __dst_cos_bucket=$4
+
     rclone --dry-run copy $__src_cos_service_instance_id:$__src_cos_bucket $__dst_cos_service_instance_id:$__dst_cos_bucket
 }
 
@@ -33,6 +36,7 @@ perform_copy() {
     local __src_cos_bucket=$2
     local __dst_cos_service_instance_id=$3
     local __dst_cos_bucket=$4
+
     rclone -v -P copy --checksum $__src_cos_service_instance_id:$__src_cos_bucket $__dst_cos_service_instance_id:$__dst_cos_bucket
 }
 
@@ -122,4 +126,13 @@ rclone_list_buckets() {
     local __profile=$1
 
     rclone lsd $__profile: | awk 'NF>1{print $NF}'
+}
+
+get_service_instance_from_json_base64() {
+
+    local __service_instance_json_base64=$1
+    local __crn=$(echo $1 | base64 --decode | jq -r .crn)
+    local __service_instance=$(echo $__crn | cut -d ':' -f 8)
+
+    echo $__service_instance
 }
