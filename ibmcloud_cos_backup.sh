@@ -40,8 +40,10 @@ prepare_backup_bucket() {
 
     local __dst_cos_service_instance_id=$1
     local __bucket_name=$2
-    local __backup_account_cos_instance_access_key_id=$3
-    local __backup_account_cos_instance_secret_access_key=$4
+
+    local __hmac_keys=$(prepare_service_credentials $__dst_cos_service_instance_id)
+    local __backup_account_cos_instance_access_key_id=$(echo $__hmac_keys | jq -r '.access_key_id')
+    local __backup_account_cos_instance_secret_access_key=$(echo $__hmac_keys | jq -r '.secret_access_key')
 
     config_ibmcloud_cli_cos $__backup_account_cos_instance_access_key_id $__backup_account_cos_instance_secret_access_key > /dev/null 2>&1
 
