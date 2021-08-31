@@ -62,9 +62,6 @@ backup_cos_instances() {
     local __rclone_config_profiles=$(grep "\[" ~/.config/rclone/rclone.conf | sed -E 's/(\[|\])//g' | xargs)
     local __execute_dry_run=$1
     local __dst_cos_service_instance=$2
-    # TODO: turn O(n*m) to O(n+m)
-    # go through profiles, get buckets and save to list
-    # after, go through buckets list and perform rclone copy or dry run
 
     for profile in $__rclone_config_profiles
     do  
@@ -88,4 +85,11 @@ backup_cos_instances() {
         echo "##############"
         echo
     done
+}
+
+bucket_region() {
+
+    local __bucket=$1
+
+    ibmcloud cos bucket-location-get --bucket $__bucket --output json | jq -r '.LocationConstraint' | sed -E 's/-(standard|smart)//g'
 }
