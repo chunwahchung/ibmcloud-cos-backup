@@ -56,3 +56,36 @@ prepare_backup_bucket() {
         echo 'backup bucket exists'
     fi
 }
+    
+backup_cos_instances() {
+
+    local __rclone_config_profiles=$(grep "\[" ~/.config/rclone/rclone.conf | sed -E 's/(\[|\])//g' | xargs)
+    local __execute_dry_run=$1
+    local __dst_cos_service_instance=$2
+    # TODO: turn O(n*m) to O(n+m)
+    # go through profiles, get buckets and save to list
+    # after, go through buckets list and perform rclone copy or dry run
+
+    for profile in $__rclone_config_profiles
+    do  
+        echo profile - $profile
+        
+        prepare_backup_bucket $__dst_cos_service_instance $profile
+
+        rclone_list_buckets $profile
+        for bucket in $(rclone_list_buckets $profile)
+        do
+            echo bucket - $bucket
+            if [[ $__execute_dry_run -eq 1 ]]; then
+                echo Executing rclone dry run!
+                perform_dry_run $profile $bucket $__dst_cos_service_instance $profile
+            else
+                echo Executing rclone copy!
+                perform_copy $profile $bucket $__dst_cos_service_instance $profile
+            fi
+            echo
+        done
+        echo "##############"
+        echo
+    done
+}
