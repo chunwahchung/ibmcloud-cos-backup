@@ -108,3 +108,11 @@ bucket_endpoint() {
         echo $__public_endpoint
     fi
 }
+
+get_HMAC_key_from_service_credential() {
+
+    local __service_credential_name=$1
+    local __hmac_keys=$(ibmcloud resource service-key $__service_credential_name --output json | jq '.[0].credentials.cos_hmac_keys')
+   
+    echo $__hmac_keys
+}
