@@ -194,3 +194,13 @@ create_rclone_profiles() {
         create_rclone_profile "$__cos_service_instance_id" $__access_key_id $__secret_access_key $__use_private_endpoint
     done    
 }
+
+create_hmac_service_credential_name() {
+
+    local __cos_service_instance_name=$1
+    local __remove_spaces=$(echo $__cos_service_instance_nam  e | sed 's/ /-/g')
+    local __service_credential_suffix=".service-credentials"
+    local __service_credential_name="$__remove_spaces$__service_credential_suffix"
+    
+    echo $__service_credential_name
+}
