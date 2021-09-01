@@ -154,9 +154,9 @@ create_rclone_profile() {
         local __profile="[$__profile_name]\ntype = s3\nprovider = IBMCOS\nenv_auth = false\naccess_key_id = $__access_key_id\nsecret_access_key = $__secret_access_key\nendpoint = $__endpoint\n\n"
 
         printf "$__profile" >> ~/.config/rclone/rclone.conf
-        printf "$__profile"
+        printf "$__profile\n"
     else 
-        echo "Service instance '$__profile_name' has no buckets. Not creating an rclone profile."
+        printf "Service instance '$__profile_name' has no buckets. Not creating an rclone profile.\n"
     fi
 }
 
@@ -176,4 +176,21 @@ prepare_service_credentials() {
 
     local __hmac_keys=$(get_HMAC_key_from_service_credential "$__service_credential_name")
     echo $__hmac_keys
+}
+
+create_rclone_profiles() {
+
+    local __use_private_endpoint=$1
+
+    local __cos_service_instances_json_base64=$(ibmcloud resource search "service_name:cloud-object-storage" --output json | jq -r '.items' | jq -r '.[] | @base64')
+
+    for row in $__cos_service_instances_json_base64
+    do
+        local __cos_service_instance_id=$(get_service_instance_from_json_base64 $row)
+        local __hmac_keys=$(prepare_service_credentials $__cos_service_instance_id)
+        local __access_key_id=$(echo $__hmac_keys | jq -r '.access_key_id')
+        local __secret_access_key=$(echo $__hmac_keys | jq -r '.secret_access_key')
+        
+        create_rclone_profile "$__cos_service_instance_id" $__access_key_id $__secret_access_key $__use_private_endpoint
+    done    
 }
