@@ -209,8 +209,44 @@ create_hmac_service_credential() {
 
     local __cos_service_instance_name=$1
     local __service_credential_name=$2
-    
+
     echo "__cos_service_instance_name: '$__cos_service_instance_name'"
     echo "__service_credential_name: '$__service_credential_name'"
     ibmcloud resource service-key-create "$__service_credential_name" Writer --instance-id "$__cos_service_instance_name" --parameters '{"HMAC":true}'
+}
+
+prepare_accounts_for_backup() {
+
+    local __cos_backup_sources=$1
+    local __use_private_endpoint=$2
+    local __cos_backup_destination=$3
+    local __cos_backup_svc_instance_id=$4
+    
+    echo __cos_backup_sources - "'$__cos_backup_sources'"
+    echo __use_private_endpoint - "'$__use_private_endpoint'"
+    echo __cos_backup_destination - "'$__cos_backup_destination'"
+    echo __cos_backup_svc_instance_id - "'$__cos_backup_svc_instance_id'"
+
+    if [[ -n "$__cos_backup_svc_instance_id" ]]; then
+        echo "destination was specified - $__cos_backup_svc_instance_id"
+        local __hmac_keys=$(prepare_service_credentials $__cos_backup_svc_instance_id)
+        local __access_key_id=$(echo $__hmac_keys | jq -r '.access_key_id')
+        local __secret_access_key=$(echo $__hmac_keys | jq -r '.secret_access_key')
+        
+        echo __hmac_keys - "'$__hmac_keys'"
+        echo __access_key_id - "'$__access_key_id'"
+        echo __secret_access_key - "'$__secret_access_key'"
+
+        ibmcloud_cli_login $__cos_backup_destination
+        create_rclone_profile "$__cos_backup_svc_instance_id" $__access_key_id $__secret_access_key $__use_private_endpoint $__cos_backup_svc_instance_id
+    elif [[ $__cos_backup_sources != "0" ]]; then
+        for ibmcloud_account in $__cos_backup_sources
+        do
+            echo account api key: $ibmcloud_account
+            ibmcloud_cli_login $ibmcloud_account
+            create_rclone_profiles $__use_private_endpoint
+            echo "###############################################"
+            echo
+        done
+    fi
 }
