@@ -201,6 +201,16 @@ create_hmac_service_credential_name() {
     local __remove_spaces=$(echo $__cos_service_instance_nam  e | sed 's/ /-/g')
     local __service_credential_suffix=".service-credentials"
     local __service_credential_name="$__remove_spaces$__service_credential_suffix"
-    
+
     echo $__service_credential_name
+}
+
+create_hmac_service_credential() {
+
+    local __cos_service_instance_name=$1
+    local __service_credential_name=$2
+    
+    echo "__cos_service_instance_name: '$__cos_service_instance_name'"
+    echo "__service_credential_name: '$__service_credential_name'"
+    ibmcloud resource service-key-create "$__service_credential_name" Writer --instance-id "$__cos_service_instance_name" --parameters '{"HMAC":true}'
 }
