@@ -159,3 +159,21 @@ create_rclone_profile() {
         echo "Service instance '$__profile_name' has no buckets. Not creating an rclone profile."
     fi
 }
+
+prepare_service_credentials() {
+
+    local __cos_service_instance_id=$1
+    local __service_credential_name=$(create_hmac_service_credential_name "$__cos_service_instance_id")
+
+    ibmcloud resource service-key "$__service_credential_name" > /dev/null 2>&1
+    local __service_key_exists=$(echo $?)
+
+    if [[ $__service_key_exists -eq 1 ]]; then 
+
+        echo "Service key doesn't exist. Creating service key."
+        create_hmac_service_credential "$__cos_service_instance_id" "$__service_credential_name"
+    fi
+
+    local __hmac_keys=$(get_HMAC_key_from_service_credential "$__service_credential_name")
+    echo $__hmac_keys
+}
