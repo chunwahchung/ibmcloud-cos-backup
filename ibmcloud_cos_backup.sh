@@ -249,3 +249,13 @@ _delete_bucket() {
     
     echo y | ibmcloud cos bucket-delete --bucket $__bucket --region $__region
 }
+
+_delete_buckets() {
+    
+    local __rclone_profile=$1
+
+    for bucket in $(rclone_list_buckets $__rclone_profile)
+    do  
+        _delete_bucket $bucket
+    done
+}
