@@ -21,11 +21,12 @@
 <img src="./sample-output.png">
 
 ## Motivation
-My DevOps team needed to do backups in order to fulfill Business Continuity and Disaster Recovery (BCDR) requirements.
+My DevOps team needed to meet Business Continuity and Disaster Recovery (BCDR) requirements.
 
 ## Key Features
 * Backup COS data from data tier accounts to backup account
 * Dry run option for rclone 
+* Rclone profile with private endpoint option
 * Get COS service instances
 * Get COS service credentials
 * Get buckets by COS service instance
