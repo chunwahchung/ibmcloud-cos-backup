@@ -267,3 +267,72 @@ _bucket_contents() {
 
     ibmcloud cos objects --bucket "$__bucket" --region "$__location_constraint" --output json | jq '.Contents'
 }
+
+main() {
+
+    if [[ "$1" != "-h" && "$1" != "--help" &&  $# -lt 6 ]]; then
+        printf '\033[1;31mFAILED\n\033[1;0m'
+        echo "Mandatory Flags '--destination' and '--source' and '--backup' are missing or not formatted properly. Use flag --help for more info."
+        exit 1
+    fi
+
+    local __cos_backup_sources=0
+    local __use_private_endpoint=0
+    local __cos_backup_destination
+    local __cos_backup_svc_instance_id=$1
+    local __execute_dry_run
+
+    while test $# -gt 0; do
+        case "$1" in
+            -d|--destination)
+            shift
+            __cos_backup_destination=$1
+            shift
+            ;;
+            -s|--source)
+            shift
+            __cos_backup_sources=$(echo $1 | sed 's/,/ /g')
+            shift
+            ;;
+            -b|--backup)
+            shift
+            __cos_backup_svc_instance_id=$1
+            shift
+            ;;
+            --dry-run)
+            __execute_dry_run=1
+            shift
+            ;;
+            --private-endpoint)
+            __use_private_endpoint=1
+            shift
+            ;;
+            -h|--help)
+            echo "USAGE:"
+            echo "./ibmcloud-cli.sh --source a_source_api_key --destination api_key1,api_key2,api_key_n"
+            echo
+            echo "DEFAULTS:"
+            echo "By default, the script creates profiles with public endpoints and performs an rclone copy (not a dry run)."
+            echo
+            echo "OPTIONS:"
+            echo "-h, --help                show brief help"
+            echo "-d, --destination         an apikey corresponding to an IBM Cloud account used for backups (MUST be different from accounts in the 'sources' list)"
+            echo "-s, --source              a comma separated list (with no spaces) of apikeys corresponding to IBM Cloud accounts to backup"
+            echo "--dry-run                 perform a trial run to test the created rclone configuration"
+            echo "-b, --backup              the GUID of the COS service instance to back up to"
+            exit 0
+            ;;
+            *)
+            printf '\033[1;31mFAILED\n\033[1;0m'
+            echo "'$1' is not a registered command. See ibmcloud-cli.sh --help."
+            break
+            ;;
+        esac
+    done
+    
+    set_cos_auth_to_hmac
+    prepare_accounts_for_backup $__cos_backup_sources $__use_private_endpoint
+    prepare_accounts_for_backup 0 $__use_private_endpoint $__cos_backup_destination $__cos_backup_svc_instance_id
+    backup_cos_instances $__execute_dry_run $__cos_backup_destination
+}
+main $1 $2 $3 $4 $5 $6
