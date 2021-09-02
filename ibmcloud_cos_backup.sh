@@ -221,11 +221,6 @@ prepare_accounts_for_backup() {
     local __use_private_endpoint=$2
     local __cos_backup_destination=$3
     local __cos_backup_svc_instance_id=$4
-    
-    echo __cos_backup_sources - "'$__cos_backup_sources'"
-    echo __use_private_endpoint - "'$__use_private_endpoint'"
-    echo __cos_backup_destination - "'$__cos_backup_destination'"
-    echo __cos_backup_svc_instance_id - "'$__cos_backup_svc_instance_id'"
 
     if [[ -n "$__cos_backup_svc_instance_id" ]]; then
         echo "destination was specified - $__cos_backup_svc_instance_id"
@@ -233,10 +228,6 @@ prepare_accounts_for_backup() {
         local __access_key_id=$(echo $__hmac_keys | jq -r '.access_key_id')
         local __secret_access_key=$(echo $__hmac_keys | jq -r '.secret_access_key')
         
-        echo __hmac_keys - "'$__hmac_keys'"
-        echo __access_key_id - "'$__access_key_id'"
-        echo __secret_access_key - "'$__secret_access_key'"
-
         ibmcloud_cli_login $__cos_backup_destination
         create_rclone_profile "$__cos_backup_svc_instance_id" $__access_key_id $__secret_access_key $__use_private_endpoint $__cos_backup_svc_instance_id
     elif [[ $__cos_backup_sources != "0" ]]; then
@@ -245,8 +236,16 @@ prepare_accounts_for_backup() {
             echo account api key: $ibmcloud_account
             ibmcloud_cli_login $ibmcloud_account
             create_rclone_profiles $__use_private_endpoint
-            echo "###############################################"
+            echo "#######################################"
             echo
         done
     fi
+}
+
+_delete_bucket() {
+    
+    local __bucket=$1
+    local __region=$(bucket_region)
+    
+    echo y | ibmcloud cos bucket-delete --bucket $__bucket --region $__region
 }
