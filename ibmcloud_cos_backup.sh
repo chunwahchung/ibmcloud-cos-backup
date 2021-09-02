@@ -259,3 +259,11 @@ _delete_buckets() {
         _delete_bucket $bucket
     done
 }
+
+_bucket_contents() {
+
+    local __bucket=$1
+    local __location_constraint=$(ibmcloud cos bucket-location-get --bucket $__bucket --output json | jq -r '.LocationConstraint')
+
+    ibmcloud cos objects --bucket "$__bucket" --region "$__location_constraint" --output json | jq '.Contents'
+}
